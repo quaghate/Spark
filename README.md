@@ -24,7 +24,7 @@ Reative.render(Component, undefined, document.body, true)
 
 Explicação:
 - Primeiro argumento: A função (ou expressão) que vai retornar algo renderizavel pelo render (diga-se: um valor HTML)
-- Segundo argumento: Se o primeiro argumento for uma string ao invés de uma função assíncrona, ele vai pedir um nome para ser indentificado. Esse argumento só é obrigatório se aquele argumento for uma async function
+- Segundo argumento: Se o primeiro argumento for uma string ao invés de uma função assíncrona, ele vai pedir um nome para ser indentificado. Esse argumento só é obrigatório se aquele argumento for uma String
 - Terceiro argumento: O local onde o HTML vai ser renderizado. Normalmente ele é renderizado no corpo (OBS: é necessário dar o elemento, então não adianta só dar ``"#id"``, tem que usar ``document...`` para pegar o elemento)
 - Quarto argumento: Se caso já tiver sido renderizado, se é para substituir ou não. Quando ele não substitui ele cria um novo com o mesmo Id.
 
