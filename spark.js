@@ -55,26 +55,10 @@ export class MemoryManagement {
 export class Reative {
     #state = new Map()
 
-    constructor(plugin, babel_activate = false) {
+    constructor() {
         this.#state.set("subscriber", new Map())
-        this.plugin = plugin
-        this.babel_activate = babel_activate // separa o booleano da instância Babel
         this.babel = null
         this.mg = new MemoryManagement()
-        ;(async () => {
-            return await this.#__init__()
-        })()
-    }
-
-
-    async #__init__() {
-        // O __init__ tenta importar o local onde esta o plugin. Note que o plugin que
-        // ele vai instalar é um pré-determinado que você só precisa dar o caminho até ele.
-        try {
-            if(this.babel_activate === true) {
-                this.babel = await import("./babel.js")
-            }
-        } catch(err) {}
     }
 
     #state_manager(operation, chave=null, valor=null, local="subscriber" ) {
@@ -132,52 +116,9 @@ export class Reative {
             }
         }
     }
+  
 
-    #sanitizeCode(codigo) {
-        const variaveis = {};
-        const linhas = codigo.split(/[\n;]/);
-
-        for (let linha of linhas) {
-            linha = linha.trim();
-
-            // Atribuições: const x = window;
-            const atribuicao = linha.match(/(?:const|let|var)\s+(\w+)\s*=\s*(\w+)/);
-            if (atribuicao) {
-                variaveis[atribuicao[1]] = atribuicao[2];
-            }
-
-            // Acesso tipo: x["op" + "en"]
-            const chamada = linha.match(/(\w+)\s*\[\s*(["'].*?["'])\s*\]/);
-            if (chamada) {
-                const nomeVar = chamada[1];
-                let metodo;
-
-                try {
-                    // tenta reconstruir strings tipo "op" + "en"
-                    metodo = eval(chamada[2]);
-                } catch {
-                    metodo = chamada[2].replace(/['"]/g, "");
-                }
-
-                // resolve origem: segue cadeia de atribuições
-                let origem = nomeVar;
-                while (variaveis[origem]) {
-                    origem = variaveis[origem];
-                }
-
-                if (
-                    (origem === "window" || origem === "document") &&
-                    ["open", "cookie", "write", "eval", "location"].includes(metodo)
-                ) {
-                    return true
-                }
-            }
-        }
-
-    return false;
-    }  
-
-    render(expression, name=undefined, local=document.body, subs=true, jsx_use=false) {
+    render(expression, name=undefined, local=document.body, subs=true) {
         if (typeof expression === "function" && expression.constructor.name === "AsyncFunction") {
             const fn = expression
             let promise = null
@@ -201,7 +142,6 @@ export class Reative {
             }
             // aqui vai renderizar a promessa.
             promise.then(html => {
-                console.log("HTML retornado:", html)
                 const match = html.match(/spark-id=['"]([^'"]+)['"]/)
                 const id = match ? match[1] : name
                 const node = this.mg.verifyNode(`[spark-id=${id}]`)
@@ -221,54 +161,31 @@ export class Reative {
             if (name === undefined) {
                 throw new TypeError("Como você está fornecendo uma expressão, é necessário um nome para a função.");
             }
-
-            let jsx_code = expression;
             
-            // Transforma com Babel se for JSX
-            if (jsx_use) {
-                if (!this.#sanitizeCode(jsx_code)) {
-                    throw ReferenceError(`Acesso negado para o script ${jsx_code}`)
-                }
-                jsx_code = this.babel.transform(expression, {
-                    presets: ["solid"]
-                }).code;
-                if (!this.#sanitizeCode(jsx_code)) {
-                    throw ReferenceError(`Acesso negado para o script ${jsx_code}`)
-                } else if(this.#state_manager("get", name)) {
-                    this.#state_manager("set", name, jsx_code)
-                }
-
-                // Cria a função dinamicamente a partir do código
-                fn = new Function(`return function ${name}() { return (${jsx_code}); }`)(); // Isso retorna a função
-                
-
+            let html_scaped = JSON.stringify(expression)
+            const match = expression.match(/spark-id=['"]([^'"]+)['"]/)
+            const id = match ? match[1] : name
+            const node = this.mg.verifyNode(`[spark-id=${id}]`) 
+            if (node && subs === true) {
+                node.outerHTML = expression
             } else {
-                let html_scaped = JSON.stringify(expression)
-                const match = expression.match(/spark-id=['"]([^'"]+)['"]/)
-                const id = match ? match[1] : name
-                const node = this.mg.verifyNode(`[spark-id=${id}]`)
-                
-                
-                if (node && subs === true) {
-                    node.outerHTML = expression
+                fn = new Function("local", "MemoryManagement",`return function ${name}() { 
+                const mg = new MemoryManagement()
+                local.appendChild(mg.methods.create(${html_scaped}))
+                }`)(local, MemoryManagement)
+
+                fn()
+
+                // Armazena a função no estado (simulando ponteiro)
+                if(!this.#state_manager("get", fn)) {
+                    this.#state_manager("set", fn, [])
                 } else {
-                    fn = new Function("local", "MemoryManagement",`return function ${name}() { 
-                    const mg = new MemoryManagement()
-                    local.appendChild(mg.methods.create(${html_scaped}))
-                    }`)(local, MemoryManagement)
-
-                    fn()
-
-                    // Armazena a função no estado (simulando ponteiro)
-                    if(!this.#state_manager("get", fn)) {
-                        this.#state_manager("set", fn, [])
-                    } else {
-                        this.#state_manager({"activate":[]}, fn())
-                    }
+                    this.#state_manager({"activate":[]}, fn())
                 }
+            }
                 
         }
     }
 
-}}
+}
 

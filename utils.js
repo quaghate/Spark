@@ -1,4 +1,3 @@
-
 export class ValueError extends Error {
   constructor(message) {
     super(message);
@@ -55,20 +54,21 @@ export function isDict(obj) {
 }
 
 export class eventos {
-    static callback(Id, funcoes, evento="click", config={"debug": true}) {
+    static callback(Id, funcoes, evento="click", config={}) {
         const object = document.querySelector(Id);
         let avancado = { ...config };
+        config = avancado["debug"] ?? true
         delete avancado["debug"];
         
         if (document.readyState == "loading") {
             console.error("DOM ainda não foi carregado. Verifique a ordem de carregamento do script no HTML")
-            if (config["debug"] == true) {
+            if (config["debug"]) {
                 debugger
                 return;
             } 
         } else if (!object) {
             console.error("Seletor não encontrado")
-            if (config["debug"] == true) {
+            if (config["debug"]) {
                 debugger
                 return;
             } 
@@ -101,7 +101,6 @@ export class eventos {
                 if (typeof target[prop] === "function")
                     return function(...args) {
                     // Aqui que esta a lógica do código. 
-                    // O resto da função é tudo juridiques dos códigos.
                     if (condition === "DOM_LOAD") {
                         document.addEventListener("DOMContentLoaded", () => {
                             target[prop].apply(this, args)
