@@ -1,9 +1,10 @@
 name: SonarCloud Scan - Spark
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ main ]       # roda quando você dá push no main
-  pull_request:               # roda quando abre PR
+    branches: [ main ]
+  pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
