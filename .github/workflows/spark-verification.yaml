@@ -1,0 +1,30 @@
+
+name: SonarCloud
+
+on:
+  push:
+    branches: [ main ]       # roda quando você dá push no main
+  pull_request:               # roda quando abre PR
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          organization: quaghate   # seu usuário no SonarCloud
+          projectKey: quaghate            # chave do projeto
+          token: ${{ secrets.SPARK_SECRET }}
+
