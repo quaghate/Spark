@@ -1,5 +1,4 @@
-
-name: SonarCloud
+name: SonarCloud Scan - Spark
 
 on:
   push:
@@ -8,21 +7,24 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  build:
+  sonarcloud:
     runs-on: ubuntu-latest
 
     steps:
+      # Faz checkout do repositório
       - uses: actions/checkout@v3
 
+      # Configura o Node.js (opcional, só se seu projeto precisar)
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
+      # Roda o SonarCloud Scan usando a nova action
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        uses: sonarsource/sonarqube-scan-action@v5.0.0
         with:
-          organization: quaghate   # seu usuário no SonarCloud
-          projectKey: quaghate            # chave do projeto
-          token: ${{ secrets.SPARK_SECRET }}
-
+          args: >
+            -Dsonar.projectKey=spark
+            -Dsonar.organization=quaghate
+            -Dsonar.sources=.
