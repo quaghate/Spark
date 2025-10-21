@@ -28,7 +28,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=spark
+            -Dsonar.projectKey=quaghate_Spark
             -Dsonar.organization=quaghate
             -Dsonar.sources=.
 
