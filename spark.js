@@ -74,7 +74,7 @@ export class Reative {
         promise.then(html => {
             const mg = new MemoryManagement()
 
-            local.appendChild(mg.methods.create(html))
+            local.appendChild(mg.create(html))
         })
     }
 
@@ -127,10 +127,10 @@ export class Reative {
             let fn = pool?.getRender(expression)
             let args = undefined
 
-            if (typeof name === "string"){
-                args = [name]
-            } else {
+            if (Array.isArray(name)){
                 args = [...name]
+            } else {
+                args = [name]
             }
             if (fn) {
                 let promise = fn(...args)
@@ -175,7 +175,7 @@ export class Reative {
         }
     }
 
-    replace(expression, name, mode="inner", pool=undefined) {
+    replace(expression, name, args=undefined, mode="inner", pool=undefined) {
         const local = document.querySelector(`#${name}`)
 
         // helper para não repetir código
@@ -183,20 +183,20 @@ export class Reative {
             if (typeof expression === "string") {
                 this.render(expression, name, local, pool)
             } else {
-                this.render(expression, undefined, local, pool)
+                this.render(expression, args, local, pool)
             }
         }
 
         // Modos de substituição
         if (mode === "inner") {
             local.innerHTML = ""
-            replacement(expression, name, local, pool)
+            replacement(expression, args, local, pool)
         } else if (mode === "outer") {
             local.outerHTML = `<div id="${name}"></div>`
             if (typeof expression === "string") {
                 this.render(expression, name, local, pool)
             } else {
-                this.render(expression, undefined, local, pool)
+                this.render(expression, args, local, pool)
             }
         }
     }
