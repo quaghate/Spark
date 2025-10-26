@@ -106,7 +106,7 @@ Reative.render is not a function
 - Ao usar strings no render, sempre forneça um nome
 - Use elementos DOM (não seletores) no parâmetro local
 - Ative debug nos eventos para mais informações
-- Caso queira capturar erros no código, use tracebackJS(error)
+- Caso queira capturar erros no código, use ``tracebackJS(error)``
 
 ## Contribuições
 - Reporte bugs via issues
@@ -114,5 +114,5 @@ Reative.render is not a function
 - Mantenha a simplicidade do projeto
 
 ## Licença
-[Mit license](./nit.license)
+[Mit license](./mit.license)
 
